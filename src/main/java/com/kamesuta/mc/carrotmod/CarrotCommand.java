@@ -77,7 +77,7 @@ public class CarrotCommand implements ICommand {
 				}
 			}
 		} else {
-			sendClientChat(icommandsender, new ChatComponentText("/carrot <-h|bubu you>"));
+			sendClientChat(icommandsender, new ChatComponentText("/carrot <-bubu>"));
 		}
 	}
 

@@ -27,7 +27,7 @@ public class CarrotBubu {
 
 			if (bubu.shouldBubu())
 			{
-				bubu.player.addChatMessage(new ChatComponentText("☠ " + bubu.player.getCommandSenderName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+				bubu.player.addChatMessage(new ChatComponentText("× " + bubu.player.getCommandSenderName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 				bubu.player.worldObj.createExplosion(
 						bubu.player,
 						bubu.player.getPlayerCoordinates().posX,
