@@ -27,7 +27,7 @@ public class CarrotBubu {
 
 			if (bubu.shouldBubu())
 			{
-				bubu.player.addChatMessage(new ChatComponentText("× " + bubu.player.getCommandSenderName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+				bubu.player.addChatMessage(new ChatComponentText("BUBU! " + bubu.player.getCommandSenderName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 				bubu.player.worldObj.createExplosion(
 						bubu.player,
 						bubu.player.getPlayerCoordinates().posX,
@@ -49,7 +49,7 @@ public class CarrotBubu {
 
 	public void addPlayer(EntityPlayer player, int count)
 	{
-		CarrotCommand.sendServerChat(new ChatComponentText(player.getCommandSenderName() + "> BUBUBUBUBUBUBUBU!!!!!").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
+		CarrotCommand.sendServerChat(new ChatComponentText("<" + player.getCommandSenderName() + "> BUBUBUBUBUBUBUBU!!!!!").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
 		bubuingplayers.add(new BubingPlayer(player, count));
 	}
 

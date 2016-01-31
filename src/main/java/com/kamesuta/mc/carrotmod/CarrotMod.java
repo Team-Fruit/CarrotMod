@@ -18,7 +18,7 @@ import net.minecraftforge.common.MinecraftForge;
 public class CarrotMod {
 	public static final String modid = "carrotmod";
 	public static final String modname = "Carrot Mod";
-	public static final String modversion = "1.0";
+	public static final String modversion = "1.01";
 	public static final Logger logger = LogManager.getLogger(modname);
 
 	private CarrotCommand command = new CarrotCommand();
