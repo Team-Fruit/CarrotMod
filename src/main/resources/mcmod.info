@@ -1,0 +1,16 @@
+[
+{
+  "modid": "carrotmod",
+  "name": "Carrot Mod",
+  "description": "How do you like carrot?",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["bebe0601", "Kamesuta"],
+  "credits": "©2016 TeamFruit",
+  "logoFile": "mcicon.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
