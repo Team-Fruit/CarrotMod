@@ -16,7 +16,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 @Mod(modid = CarrotMod.modid, name = CarrotMod.modname, version = CarrotMod.modversion)
 public class CarrotMod {
-	public static final String modid = "carrotsmod";
+	public static final String modid = "carrotmod";
 	public static final String modname = "Carrot Mod";
 	public static final String modversion = "1.0";
 	public static final Logger logger = LogManager.getLogger(modname);
@@ -25,10 +25,9 @@ public class CarrotMod {
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
-		logger.info("Carrot Mod has just set up, have a carrot...");
+		logger.info("Welcome to carrot.");
 		FMLCommonHandler.instance().bus().register(this);
 		MinecraftForge.EVENT_BUS.register(this);
-
 	}
 
 	@EventHandler
