@@ -2,42 +2,42 @@ package com.kamesuta.mc.carrotmod;
 
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkCheckHandler;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraftforge.common.MinecraftForge;
 
-@Mod(modid = CarrotMod.modid, name = CarrotMod.modname, version = CarrotMod.modversion)
+@Mod(modid = Reference.MODID, name = Reference.NAME, version = Reference.VERSION)
 public class CarrotMod {
-	public static final String modid = "carrotmod";
-	public static final String modname = "Carrot Mod";
-	public static final String modversion = "1.01";
-	public static final Logger logger = LogManager.getLogger(modname);
-
-	private CarrotCommand command = new CarrotCommand();
+	public final CarrotBubu bubu = new CarrotBubu();
+	public final CarrotCommand command = new CarrotCommand(this.bubu);
 
 	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		logger.info("Welcome to carrot.");
-		FMLCommonHandler.instance().bus().register(this);
-		MinecraftForge.EVENT_BUS.register(this);
+	public void preInit(final FMLPreInitializationEvent event) {
+		Reference.logger = event.getModLog();
 	}
 
 	@EventHandler
-	public void serverLoad(FMLServerStartingEvent event)
+	public void init(final FMLInitializationEvent event) {
+		Reference.logger.info("Welcome to carrot.");
+		FMLCommonHandler.instance().bus().register(this);
+		MinecraftForge.EVENT_BUS.register(this);
+		FMLCommonHandler.instance().bus().register(this.bubu);
+	}
+
+	@EventHandler
+	public void serverLoad(final FMLServerStartingEvent event)
 	{
-		event.registerServerCommand(command);
+		event.registerServerCommand(this.command);
 	}
 
 	@NetworkCheckHandler
-	public boolean netCheckHandler(Map<String, String> mods, Side side)
+	public boolean netCheckHandler(final Map<String, String> mods, final Side side)
 	{
 		return true;
 	}
