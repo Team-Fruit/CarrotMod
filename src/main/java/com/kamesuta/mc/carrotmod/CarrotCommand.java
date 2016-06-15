@@ -106,16 +106,26 @@ public class CarrotCommand extends CommandBase {
 					c0 = c0.appendSibling(item.func_151000_E());
 				}
 			}
-			sendServerChat(new ChatComponentTranslation("chat.type.emote", new Object[] {c0, ichatcomponent}));
+			sendServerChat(new ChatComponentTranslation("chat.type.emote", c0, ichatcomponent));
+		} else if (astring.length >= 1 && "t".equals(astring[0])) {
+			final IChatComponent c0 = icommandsender.func_145748_c_();
+			final String chat = func_82360_a(icommandsender, astring, 1);
+			final String chatcolor = chat.replaceAll("&", "§");
+			sendServerChat(new ChatComponentTranslation("chat.type.text", c0, chatcolor));
 		} else {
-			sendClientChat(icommandsender, new ChatComponentText("/carrot <-bubu>"));
+			sendClientChat(icommandsender, new ChatComponentText("/carrot <bubu|me|t>"));
 		}
 	}
 
 	@Override
 	public int getRequiredPermissionLevel()
 	{
-		return 0;
+		return 1;
+	}
+
+	@Override
+	public boolean canCommandSenderUseCommand(final ICommandSender p_71519_1_) {
+		return true;
 	}
 
 	@Override
