@@ -32,7 +32,7 @@ public class CarrotCommand extends CommandBase {
 	@Override
 	public String getCommandName()
 	{
-		return "tell";
+		return "carrot";
 	}
 
 	@Override
