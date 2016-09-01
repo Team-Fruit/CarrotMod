@@ -60,11 +60,8 @@ public class CarrotBubu {
 		{
 			final BubingPlayer bubu = it.next();
 
-			if (StringUtils.equals(name, bubu.player.getCommandSenderName())) {
-				final IChatComponent c0 = CarrotCommand.getNameWithItem(player);
-				//				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, "canceled BUBU!.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
+			if (StringUtils.equals(name, bubu.player.getCommandSenderName()))
 				it.remove();
-			}
 		}
 	}
 

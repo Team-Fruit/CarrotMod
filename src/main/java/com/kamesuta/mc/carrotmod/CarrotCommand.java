@@ -22,6 +22,8 @@ import net.minecraft.util.IChatComponent;
 public class CarrotCommand extends CommandBase {
 	private final CarrotBubu bubu;
 
+	//	protected static final Pattern p = Pattern.compile("https?://[-_.!~*\'()a-zA-Z0-9;/?:@&=+$,%#]+");
+
 	public CarrotCommand(final CarrotBubu bubu) {
 		this.bubu = bubu;
 	}
@@ -79,7 +81,12 @@ public class CarrotCommand extends CommandBase {
 					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("You don't have permission to use [bubu.other]").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 				}
 			} else {
-				if (bubu) this.bubu.addPlayer(getCommandSenderAsPlayer(icommandsender), count); else this.bubu.removePlayer(getCommandSenderAsPlayer(icommandsender));
+				if (bubu) {
+					this.bubu.addPlayer(getCommandSenderAsPlayer(icommandsender), count);
+				} else {
+					this.bubu.removePlayer(getCommandSenderAsPlayer(icommandsender));
+					func_152373_a(icommandsender, this, EnumChatFormatting.GOLD + "canceled BUBU!.", new Object[0]);
+				}
 			}
 		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "me")) {
 			final IChatComponent c0 = getNameWithItem(icommandsender);
@@ -109,15 +116,12 @@ public class CarrotCommand extends CommandBase {
 				entityplayermp.addChatMessage(chatcomponenttranslation);
 				icommandsender.addChatMessage(chatcomponenttranslation1);
 
-				final String[] msg =astring[2].split(" ");
 				final List<String> links = new ArrayList<String>();
 				final String[] linkstr = {"http://", "https://"};
-				for (final String str : msg) {
-					for (final String str1 : linkstr) {
-						final int index = str.indexOf(str1);
-						if (index != -1)
-							links.add(str.substring(index).trim());
-					}
+				for (final String str : linkstr) {
+					final int index = str.indexOf(str);
+					if (index != -1)
+						links.add(str.substring(index).trim());
 				}
 				if (!links.isEmpty()) {
 					final IChatComponent line = ChatUtil.byText("");
@@ -127,6 +131,7 @@ public class CarrotCommand extends CommandBase {
 						final IChatComponent c = ChatUtil.byText(oneLink ? "[ Link ]" : ("[ Link #" + (i + 1) + " ]"));
 						c.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)));
 						c.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
+						c.getChatStyle().setColor(EnumChatFormatting.GOLD);
 						line.appendSibling(c);
 						if(!oneLink)
 							line.appendSibling(ChatUtil.byText(" "));
