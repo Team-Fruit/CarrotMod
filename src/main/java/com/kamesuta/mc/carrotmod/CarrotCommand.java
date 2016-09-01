@@ -1,5 +1,6 @@
 package com.kamesuta.mc.carrotmod;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,6 +11,8 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.event.HoverEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatStyle;
@@ -88,7 +91,7 @@ public class CarrotCommand extends CommandBase {
 			final String chat = func_82360_a(icommandsender, astring, 1);
 			final String chatcolor = chat.replaceAll("&", "\u00A7");
 			ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, chatcolor));
-		} else if (astring.length >= 2 && (StringUtils.equalsIgnoreCase(astring[0], "tell") || StringUtils.equalsIgnoreCase(astring[0], "w"))) {
+		} else if (astring.length >= 2 && (StringUtils.equalsIgnoreCase(astring[0], "tell") || StringUtils.equalsIgnoreCase(astring[0], "w") || StringUtils.equalsIgnoreCase(astring[0], "msg"))) {
 			final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
 			if (entityplayermp == null)
 			{
@@ -105,6 +108,31 @@ public class CarrotCommand extends CommandBase {
 				chatcomponenttranslation1.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 				entityplayermp.addChatMessage(chatcomponenttranslation);
 				icommandsender.addChatMessage(chatcomponenttranslation1);
+
+				final String[] msg =astring[2].split(" ");
+				final List<String> links = new ArrayList<String>();
+				final String[] linkstr = {"http://", "https://"};
+				for (final String str : msg) {
+					for (final String str1 : linkstr) {
+						final int index = str.indexOf(str1);
+						if (index != -1)
+							links.add(str.substring(index).trim());
+					}
+				}
+				if (!links.isEmpty()) {
+					final IChatComponent line = ChatUtil.byText("");
+					final boolean oneLink = links.size() == 1;
+					for(int i = 0; i < links.size(); i++) {
+						final String link = links.get(i);
+						final IChatComponent c = ChatUtil.byText(oneLink ? "[ Link ]" : ("[ Link #" + (i + 1) + " ]"));
+						c.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)));
+						c.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
+						line.appendSibling(c);
+						if(!oneLink)
+							line.appendSibling(ChatUtil.byText(" "));
+					}
+					ChatUtil.sendPlayerChat(entityplayermp, line);
+				}
 			}
 		} else {
 			ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("/carrot <bubu|me|t|tell>"));

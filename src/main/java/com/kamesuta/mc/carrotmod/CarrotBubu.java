@@ -62,7 +62,7 @@ public class CarrotBubu {
 
 			if (StringUtils.equals(name, bubu.player.getCommandSenderName())) {
 				final IChatComponent c0 = CarrotCommand.getNameWithItem(player);
-				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, "canceled BUBU!.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
+				//				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, "canceled BUBU!.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
 				it.remove();
 			}
 		}
