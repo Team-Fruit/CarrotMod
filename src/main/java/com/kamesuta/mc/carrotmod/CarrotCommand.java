@@ -85,7 +85,7 @@ public class CarrotCommand extends CommandBase {
 					this.bubu.addPlayer(getCommandSenderAsPlayer(icommandsender), count);
 				} else {
 					this.bubu.removePlayer(getCommandSenderAsPlayer(icommandsender));
-					func_152373_a(icommandsender, this, EnumChatFormatting.GOLD + "canceled BUBU!.", new Object[0]);
+					func_152373_a(icommandsender, this, "canceled BUBU!.", new Object[0]);
 				}
 			}
 		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "me")) {
