@@ -162,10 +162,13 @@ public class CarrotCommand extends CommandBase {
 
 	@Override
 	public List<String> addTabCompletionOptions(final ICommandSender icommandsender, final String[] astring) {
-		if (astring.length <= 1)
-			return Arrays.asList("bubu", "t", "me", "tell");
-		else
+		if (astring.length <= 1) {
+			return Arrays.asList("bubu", "t", "me", "tell", "msg");
+		} else if (astring.length <= 2) {
+			return getListOfStringsMatchingLastWord(astring, MinecraftServer.getServer().getAllUsernames());
+		} else {
 			return null;
+		}
 	}
 
 	@Override
