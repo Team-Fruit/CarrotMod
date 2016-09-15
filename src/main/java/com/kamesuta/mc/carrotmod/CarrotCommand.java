@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -61,8 +62,8 @@ public class CarrotCommand extends CommandBase {
 		if (astring.length >= 1 && (StringUtils.equalsIgnoreCase(astring[0], "bubu") || StringUtils.equalsIgnoreCase(astring[0], "!bubu")))
 		{
 			final boolean bubu = StringUtils.equalsIgnoreCase(astring[0], "bubu");
-			final int count = parseIntDefault(astring[astring.length-1], -1);
-			if (astring.length >= 2 && !(parseIntDefault(astring[1], -1) >= 0)) {
+			final int count = NumberUtils.toInt(astring[astring.length-1], -1);
+			if (astring.length >= 2 && !(NumberUtils.toInt(astring[1], -1) >= 0)) {
 				final boolean hasPermission = (!(icommandsender instanceof EntityPlayer)) || MinecraftServer.getServer().getConfigurationManager().func_152596_g(((EntityPlayer)icommandsender).getGameProfile());
 				if(hasPermission) {
 					final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
@@ -91,13 +92,17 @@ public class CarrotCommand extends CommandBase {
 		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "me")) {
 			final IChatComponent c0 = getNameWithItem(icommandsender);
 			final String chat = func_82360_a(icommandsender, astring, 1);
-			final String chatcolor = chat.replaceAll("&", "\u00A7");
-			ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.emote", c0, chatcolor));
+			if (c0 != null || StringUtils.isNotBlank(chat)) {
+				final String chatcolor = chat.replaceAll("&", "\u00A7");
+				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.emote", c0, chatcolor));
+			}
 		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "t")) {
 			final IChatComponent c0 = getNameWithItem(icommandsender);
 			final String chat = func_82360_a(icommandsender, astring, 1);
-			final String chatcolor = chat.replaceAll("&", "\u00A7");
-			ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, chatcolor));
+			if (c0 != null || StringUtils.isNotBlank(chat)) {
+				final String chatcolor = chat.replaceAll("&", "\u00A7");
+				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, chatcolor));
+			}
 		} else if (astring.length >= 2 && (StringUtils.equalsIgnoreCase(astring[0], "tell") || StringUtils.equalsIgnoreCase(astring[0], "w") || StringUtils.equalsIgnoreCase(astring[0], "msg"))) {
 			final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
 			if (entityplayermp == null)
@@ -109,6 +114,8 @@ public class CarrotCommand extends CommandBase {
 				final String chat = func_82360_a(icommandsender, astring, 2);
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				final IChatComponent c0 = getNameWithItem(icommandsender);
+				if (c0 != null || StringUtils.isNotBlank(chat))
+					return;
 				final IChatComponent chatcomponenttranslation = ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor);
 				final IChatComponent chatcomponenttranslation1 = ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor);
 				chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
@@ -156,7 +163,10 @@ public class CarrotCommand extends CommandBase {
 	public static IChatComponent getNameWithItem(final ICommandSender icommandsender) {
 		final IChatComponent c0 = icommandsender.func_145748_c_();
 		final ItemStack item = getItem(icommandsender);
-		if (item != null) c0.appendSibling(item.func_151000_E());
+		if (item != null)
+			c0.appendSibling(item.func_151000_E());
+		else
+			return null;
 		return c0;
 	}
 
@@ -181,12 +191,4 @@ public class CarrotCommand extends CommandBase {
 		return 0;
 	}
 
-	public static int parseIntDefault(final String s, final int d)
-	{
-		int count = d;
-		try {
-			count = Integer.parseInt(s);
-		} catch (final NumberFormatException e) {}
-		return count;
-	}
 }
