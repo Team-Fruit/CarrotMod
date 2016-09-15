@@ -164,10 +164,9 @@ public class CarrotCommand extends CommandBase {
 		final IChatComponent c0 = icommandsender.func_145748_c_();
 		final ItemStack item = getItem(icommandsender);
 		if (item != null)
-			c0.appendSibling(item.func_151000_E());
+			return c0.appendSibling(item.func_151000_E());
 		else
 			return null;
-		return c0;
 	}
 
 	@Override
