@@ -90,19 +90,22 @@ public class CarrotCommand extends CommandBase {
 				}
 			}
 		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "me")) {
-			final IChatComponent c0 = getNameWithItem(icommandsender);
+			final ItemStack item = getItem(icommandsender);
+			final IChatComponent c0 = getNameWithItem(icommandsender, item);
 			final String chat = func_82360_a(icommandsender, astring, 1);
-			if (c0 != null || StringUtils.isNotBlank(chat)) {
+			if (item != null || StringUtils.isNotBlank(chat)) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.emote", c0, chatcolor));
 			}
 		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "t")) {
-			final IChatComponent c0 = getNameWithItem(icommandsender);
+			final ItemStack item = getItem(icommandsender);
+			final IChatComponent c0 = getNameWithItem(icommandsender, item);
 			final String chat = func_82360_a(icommandsender, astring, 1);
-			if (c0 != null || StringUtils.isNotBlank(chat)) {
+			if (item != null || StringUtils.isNotBlank(chat)) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, chatcolor));
 			}
+
 		} else if (astring.length >= 2 && (StringUtils.equalsIgnoreCase(astring[0], "tell") || StringUtils.equalsIgnoreCase(astring[0], "w") || StringUtils.equalsIgnoreCase(astring[0], "msg"))) {
 			final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
 			if (entityplayermp == null)
@@ -111,35 +114,35 @@ public class CarrotCommand extends CommandBase {
 			}
 			else
 			{
+				final ItemStack item = getItem(icommandsender);
 				final String chat = func_82360_a(icommandsender, astring, 2);
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
-				final IChatComponent c0 = getNameWithItem(icommandsender);
-				if (c0 != null || StringUtils.isNotBlank(chat))
+				final IChatComponent c0 = getNameWithItem(icommandsender, item);
+				if (item == null && StringUtils.isBlank(chat))
 					return;
 				final IChatComponent chatcomponenttranslation = ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor);
 				final IChatComponent chatcomponenttranslation1 = ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor);
-				chatcomponenttranslation.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
-				chatcomponenttranslation1.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
-				entityplayermp.addChatMessage(chatcomponenttranslation);
-				icommandsender.addChatMessage(chatcomponenttranslation1);
+				ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
+				ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation1.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
 
 				final List<String> links = new ArrayList<String>();
 				final String[] linkstr = {"http://", "https://"};
-				for (final String str : linkstr) {
-					final int index = str.indexOf(str);
-					if (index != -1)
-						links.add(str.substring(index).trim());
+				for (final String str : astring) {
+					for (final String str1 : linkstr) {
+						final int index = str.indexOf(str1);
+						if (index != -1)
+							links.add(str.substring(index).trim());
+					}
 				}
 				if (!links.isEmpty()) {
 					final IChatComponent line = ChatUtil.byText("");
 					final boolean oneLink = links.size() == 1;
 					for(int i = 0; i < links.size(); i++) {
 						final String link = links.get(i);
-						final IChatComponent c = ChatUtil.byText(oneLink ? "[ Link ]" : ("[ Link #" + (i + 1) + " ]"));
-						c.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)));
-						c.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
-						c.getChatStyle().setColor(EnumChatFormatting.GOLD);
-						line.appendSibling(c);
+						final ChatStyle chatStyle = new ChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)))
+								.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link))
+								.setColor(EnumChatFormatting.GOLD);
+						line.appendSibling(ChatUtil.byText(oneLink ? "[ Link ]" : ("[ Link #" + (i + 1) + " ]")).setChatStyle(chatStyle));
 						if(!oneLink)
 							line.appendSibling(ChatUtil.byText(" "));
 					}
@@ -160,19 +163,17 @@ public class CarrotCommand extends CommandBase {
 		return item;
 	}
 
-	public static IChatComponent getNameWithItem(final ICommandSender icommandsender) {
+	public static IChatComponent getNameWithItem(final ICommandSender icommandsender, final ItemStack item) {
 		final IChatComponent c0 = icommandsender.func_145748_c_();
-		final ItemStack item = getItem(icommandsender);
 		if (item != null)
-			return c0.appendSibling(item.func_151000_E());
-		else
-			return null;
+			c0.appendSibling(item.func_151000_E());
+		return c0;
 	}
 
 	@Override
 	public List<String> addTabCompletionOptions(final ICommandSender icommandsender, final String[] astring) {
 		if (astring.length <= 1) {
-			return Arrays.asList("bubu", "t", "me", "tell", "msg");
+			return getListOfStringsMatchingLastWord(astring, "bubu", "t", "me", "tell", "msg");
 		} else if (astring.length <= 2) {
 			return getListOfStringsMatchingLastWord(astring, MinecraftServer.getServer().getAllUsernames());
 		} else {
@@ -182,7 +183,7 @@ public class CarrotCommand extends CommandBase {
 
 	@Override
 	public boolean isUsernameIndex(final String[] astring, final int i) {
-		return false;
+		return i == 2;
 	}
 
 	@Override

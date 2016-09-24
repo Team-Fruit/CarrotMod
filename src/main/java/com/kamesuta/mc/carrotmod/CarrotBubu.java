@@ -49,7 +49,7 @@ public class CarrotBubu {
 
 	public void addPlayer(final EntityPlayer player, final int count)
 	{
-		final IChatComponent c0 = CarrotCommand.getNameWithItem(player);
+		final IChatComponent c0 = player.func_145748_c_();
 		ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, "BUBUBUBUBUBUBUBU!!!!!").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
 		this.bubuingplayers.add(new BubingPlayer(player, count));
 	}
