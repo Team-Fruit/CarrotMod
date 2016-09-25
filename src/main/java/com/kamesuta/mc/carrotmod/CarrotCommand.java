@@ -149,6 +149,12 @@ public class CarrotCommand extends CommandBase {
 					ChatUtil.sendPlayerChat(entityplayermp, line);
 				}
 			}
+		} else if (StringUtils.equalsIgnoreCase(astring[0], "allplayer") && icommandsender == MinecraftServer.getServer()) {
+			final MinecraftServer s = MinecraftServer.getServer();
+			Reference.logger.info("CurrentPlayerCount: {}", s.getCurrentPlayerCount());
+			final String userNames = StringUtils.join(s.getAllUsernames(), " ");
+			if (StringUtils.isNotBlank(userNames))
+				Reference.logger.info(userNames);
 		} else {
 			ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("/carrot <bubu|me|t|tell>"));
 		}
