@@ -104,6 +104,7 @@ public class CarrotCommand extends CommandBase {
 			if (item != null || StringUtils.isNotBlank(chat)) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, chatcolor));
+				sendLinkChat(icommandsender, astring);
 			}
 
 		} else if (astring.length >= 2 && (StringUtils.equalsIgnoreCase(astring[0], "tell") || StringUtils.equalsIgnoreCase(astring[0], "w") || StringUtils.equalsIgnoreCase(astring[0], "msg"))) {
@@ -118,35 +119,12 @@ public class CarrotCommand extends CommandBase {
 				final String chat = func_82360_a(icommandsender, astring, 2);
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				final IChatComponent c0 = getNameWithItem(icommandsender, item);
-				if (item == null && StringUtils.isBlank(chat))
-					return;
-				final IChatComponent chatcomponenttranslation = ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor);
-				final IChatComponent chatcomponenttranslation1 = ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor);
-				ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
-				ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation1.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
-
-				final List<String> links = new ArrayList<String>();
-				final String[] linkstr = {"http://", "https://"};
-				for (final String str : astring) {
-					for (final String str1 : linkstr) {
-						final int index = str.indexOf(str1);
-						if (index != -1)
-							links.add(str.substring(index).trim());
-					}
-				}
-				if (!links.isEmpty()) {
-					final IChatComponent line = ChatUtil.byText("");
-					final boolean oneLink = links.size() == 1;
-					for(int i = 0; i < links.size(); i++) {
-						final String link = links.get(i);
-						final ChatStyle chatStyle = new ChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)))
-								.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link))
-								.setColor(EnumChatFormatting.GOLD);
-						line.appendSibling(ChatUtil.byText(oneLink ? "[ Link ]" : ("[ Link #" + (i + 1) + " ]")).setChatStyle(chatStyle));
-						if(!oneLink)
-							line.appendSibling(ChatUtil.byText(" "));
-					}
-					ChatUtil.sendPlayerChat(entityplayermp, line);
+				if (item != null || StringUtils.isNotBlank(chat)) {
+					final IChatComponent chatcomponenttranslation = ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor);
+					final IChatComponent chatcomponenttranslation1 = ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor);
+					ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
+					ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation1.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
+					sendLinkChat(icommandsender, astring);
 				}
 			}
 		} else if (StringUtils.equalsIgnoreCase(astring[0], "allplayer") && icommandsender.equals(MinecraftServer.getServer())) {
@@ -174,6 +152,32 @@ public class CarrotCommand extends CommandBase {
 		if (item != null)
 			c0.appendSibling(item.func_151000_E());
 		return c0;
+	}
+
+	public static void sendLinkChat(final ICommandSender icommandsender, final String[] astring) {
+		final List<String> links = new ArrayList<String>();
+		final String[] linkstr = {"http://", "https://"};
+		for (final String str : astring) {
+			for (final String str1 : linkstr) {
+				final int index = str.indexOf(str1);
+				if (index != -1)
+					links.add(str.substring(index).trim());
+			}
+		}
+		if (!links.isEmpty()) {
+			final IChatComponent line = ChatUtil.byText("");
+			final boolean oneLink = links.size() == 1;
+			for(int i = 0; i < links.size(); i++) {
+				final String link = links.get(i);
+				final ChatStyle chatStyle = new ChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)))
+						.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link))
+						.setColor(EnumChatFormatting.GOLD);
+				line.appendSibling(ChatUtil.byText(oneLink ? "[ Link ]" : ("[ Link #" + (i + 1) + " ]")).setChatStyle(chatStyle));
+				if(!oneLink)
+					line.appendSibling(ChatUtil.byText(" "));
+			}
+			ChatUtil.sendPlayerChat(icommandsender, line);
+		}
 	}
 
 	@Override
