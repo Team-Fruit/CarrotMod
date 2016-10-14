@@ -122,8 +122,8 @@ public class CarrotCommand extends CommandBase {
 				if (item != null || StringUtils.isNotBlank(chat)) {
 					final IChatComponent chatcomponenttranslation = ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor);
 					final IChatComponent chatcomponenttranslation1 = ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor);
-					ChatUtil.sendPlayerChat(icommandsender, chatcomponenttranslation.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
-					ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation1.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
+					ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
+					ChatUtil.sendPlayerChat(icommandsender, chatcomponenttranslation1.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
 					sendLinkChat(icommandsender, astring);
 				}
 			}
