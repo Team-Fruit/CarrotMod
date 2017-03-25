@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
@@ -20,12 +22,16 @@ public class CarrotBubu {
 
 	@SubscribeEvent
 	public void onServerTick(final ServerTickEvent event) {
-		for (final Iterator<BubingPlayer> it = this.bubuingplayers.iterator(); it.hasNext();)
-		{
+		for (final Iterator<BubingPlayer> it = this.bubuingplayers.iterator(); it.hasNext();) {
 			final BubingPlayer bubu = it.next();
 
-			if (bubu.shouldBubu())
-			{
+			if (bubu.remaining%1000==0) {
+				final EntityPlayerMP player = MinecraftServer.getServer().getConfigurationManager().func_152612_a(bubu.player.getCommandSenderName());
+				if (bubu.player!=player)
+					it.remove();
+			}
+
+			if (bubu.shouldBubu()) {
 				bubu.player.addChatMessage(bubu.message);
 				bubu.player.worldObj.createExplosion(
 						bubu.player,
@@ -33,22 +39,21 @@ public class CarrotBubu {
 						bubu.player.getPlayerCoordinates().posY,
 						bubu.player.getPlayerCoordinates().posZ,
 						2F,
-						false
-						);
+						false);
 				bubu.player.attackEntityFrom(bubu.source, Float.MIN_VALUE);
 			} else {
 				bubu.player.attackEntityFrom(bubu.source, Float.MAX_VALUE);
-				if (bubu.player.isDead) {
+				bubu.player.setHealth(0f);
+				bubu.player.setAbsorptionAmount(0f);
+				if (bubu.player.isDead)
 					it.remove();
-				}
 			}
 
 			bubu.next();
 		}
 	}
 
-	public void addPlayer(final EntityPlayer player, final int count)
-	{
+	public void addPlayer(final EntityPlayer player, final int count) {
 		final IChatComponent c0 = player.func_145748_c_();
 		ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, "BUBUBUBUBUBUBUBU!!!!!").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
 		this.bubuingplayers.add(new BubingPlayer(player, count));
@@ -56,8 +61,7 @@ public class CarrotBubu {
 
 	public void removePlayer(final EntityPlayer player) {
 		final String name = player.getCommandSenderName();
-		for (final Iterator<BubingPlayer> it = this.bubuingplayers.iterator(); it.hasNext();)
-		{
+		for (final Iterator<BubingPlayer> it = this.bubuingplayers.iterator(); it.hasNext();) {
 			final BubingPlayer bubu = it.next();
 
 			if (StringUtils.equals(name, bubu.player.getCommandSenderName()))
@@ -73,21 +77,18 @@ public class CarrotBubu {
 		public IChatComponent message;
 		public DamageSource source;
 
-		public BubingPlayer(final EntityPlayer player, final int maxnum)
-		{
+		public BubingPlayer(final EntityPlayer player, final int maxnum) {
 			this.player = player;
-			this.message = ChatUtil.byText("BUBU! " + this.player.getCommandSenderName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED));
+			this.message = ChatUtil.byText("BUBU! "+this.player.getCommandSenderName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED));
 			this.source = new EntityDamageSource("explosion.player", player).setExplosion().setDamageBypassesArmor().setDamageAllowedInCreativeMode();
-			this.remaining = (maxnum >= 0) ? maxnum : DefaultBubuCount;
+			this.remaining = maxnum>=0 ? maxnum : DefaultBubuCount;
 		}
 
-		public boolean shouldBubu()
-		{
-			return this.remaining > 0;
+		public boolean shouldBubu() {
+			return this.remaining>0;
 		}
 
-		public void next()
-		{
+		public void next() {
 			this.remaining--;
 		}
 	}

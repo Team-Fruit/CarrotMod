@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -59,6 +62,7 @@ public class CarrotCommand extends CommandBase {
 		if (astring.length>=1&&(StringUtils.equalsIgnoreCase(astring[0], "bubu")||StringUtils.equalsIgnoreCase(astring[0], "!bubu"))) {
 			final boolean bubu = StringUtils.equalsIgnoreCase(astring[0], "bubu");
 			final int count = NumberUtils.toInt(astring[astring.length-1], -1);
+			EntityPlayerMP player = null;
 			if (astring.length>=2&&!(NumberUtils.toInt(astring[1], -1)>=0)) {
 				final boolean hasPermission = !(icommandsender instanceof EntityPlayer)||MinecraftServer.getServer().getConfigurationManager().func_152596_g(((EntityPlayer) icommandsender).getGameProfile());
 				if (hasPermission) {
@@ -69,26 +73,47 @@ public class CarrotCommand extends CommandBase {
 						final IChatComponent chatcomponent = ChatUtil.byText(icommandsender.getCommandSenderName()+" had "+entityplayermp.getCommandSenderName()+" BUBUed!");
 						chatcomponent.getChatStyle().setColor(EnumChatFormatting.GOLD).setItalic(true);
 						ChatUtil.sendServerChat(chatcomponent);
-						if (bubu)
-							this.bubu.addPlayer(getCommandSenderAsPlayer(entityplayermp), count);
-						else
-							this.bubu.removePlayer(getCommandSenderAsPlayer(entityplayermp));
+						player = getCommandSenderAsPlayer(entityplayermp);
 					}
 				} else
 					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("You don't have permission to use [bubu.other]").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-			} else if (bubu)
-				this.bubu.addPlayer(getCommandSenderAsPlayer(icommandsender), count);
-			else {
-				this.bubu.removePlayer(getCommandSenderAsPlayer(icommandsender));
-				func_152373_a(icommandsender, this, "canceled BUBU!.", new Object[0]);
-			}
+			} else
+				player = getCommandSenderAsPlayer(icommandsender);
+			if (player!=null)
+				if (bubu)
+					this.bubu.addPlayer(player, count);
+				else {
+					this.bubu.removePlayer(player);
+					func_152373_a(icommandsender, this, "canceled BUBU!.", new Object[0]);
+				}
 		} else if (astring.length>=1&&StringUtils.equalsIgnoreCase(astring[0], "nan")) {
-			final EntityPlayerMP entityplayermp = getCommandSenderAsPlayer(icommandsender);
+			EntityPlayerMP player = null;
 			final boolean hasPermission = !(icommandsender instanceof EntityPlayer)||MinecraftServer.getServer().getConfigurationManager().func_152596_g(((EntityPlayer) icommandsender).getGameProfile());
-			if (Float.isNaN(entityplayermp.getHealth()))
-				entityplayermp.setHealth(1);
-			else if (hasPermission)
-				entityplayermp.setHealth(Float.NaN);
+			if (astring.length>=2&&!NumberUtils.isNumber(astring[1])) {
+				if (hasPermission) {
+					final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
+					if (entityplayermp==null)
+						throw new PlayerNotFoundException();
+					else
+						player = getCommandSenderAsPlayer(entityplayermp);
+				} else
+					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("You don't have permission to use [nan.other]").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+			} else
+				player = getCommandSenderAsPlayer(icommandsender);
+			if (player!=null)
+				if (Float.isNaN(player.getHealth())) {
+					player.setHealth(1f);
+					player.setAbsorptionAmount(0f);
+					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("* "+player.getCommandSenderName()+"'s health is no longer NaN.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY)));
+				} else if (hasPermission) {
+					player.setHealth(Float.NaN);
+					player.setAbsorptionAmount(Float.NaN);
+					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("* "+player.getCommandSenderName()+"'s health is now NaN.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY)));
+				} else
+					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("You don't have permission to use [nan.on]").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+			//		} else if (astring.length>=1&&StringUtils.equalsIgnoreCase(astring[0], "health")) {
+			//			final EntityPlayerMP player = getCommandSenderAsPlayer(icommandsender);
+			//			ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("("+player.getDataWatcher().getWatchableObjectFloat(6)+")").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY)));
 		} else if (astring.length>=1&&StringUtils.equalsIgnoreCase(astring[0], "me")) {
 			final ItemStack item = getItem(icommandsender);
 			final IChatComponent c0 = getNameWithItem(icommandsender, item);
@@ -104,9 +129,8 @@ public class CarrotCommand extends CommandBase {
 			if (item!=null||StringUtils.isNotBlank(chat)) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, chatcolor));
-				sendLinkChat(icommandsender, astring);
+				sendLinkChatToServer(astring);
 			}
-
 		} else if (astring.length>=2&&(StringUtils.equalsIgnoreCase(astring[0], "tell")||StringUtils.equalsIgnoreCase(astring[0], "w")||StringUtils.equalsIgnoreCase(astring[0], "msg"))) {
 			final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
 			if (entityplayermp==null)
@@ -117,11 +141,10 @@ public class CarrotCommand extends CommandBase {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				final IChatComponent c0 = getNameWithItem(icommandsender, item);
 				if (item!=null||StringUtils.isNotBlank(chat)) {
-					final IChatComponent chatcomponenttranslation = ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor);
-					final IChatComponent chatcomponenttranslation1 = ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor);
-					ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
-					ChatUtil.sendPlayerChat(icommandsender, chatcomponenttranslation1.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
-					sendLinkChat(icommandsender, astring);
+					ChatUtil.sendPlayerChat(entityplayermp, ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
+					sendLinkChatToPlayer(entityplayermp, astring);
+					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
+					sendLinkChatToPlayer(icommandsender, astring);
 				}
 			}
 		} else if (StringUtils.equalsIgnoreCase(astring[0], "allplayer")&&icommandsender.equals(MinecraftServer.getServer())) {
@@ -150,7 +173,7 @@ public class CarrotCommand extends CommandBase {
 		return c0;
 	}
 
-	public static void sendLinkChat(final ICommandSender icommandsender, final String[] astring) {
+	public static @Nullable IChatComponent getLinkChat(final String[] astring) {
 		final List<String> links = new ArrayList<String>();
 		final String[] linkstr = { "http://", "https://" };
 		for (final String str : astring)
@@ -171,10 +194,24 @@ public class CarrotCommand extends CommandBase {
 				if (!oneLink)
 					line.appendSibling(ChatUtil.byText(" "));
 			}
-			ChatUtil.sendPlayerChat(icommandsender, line);
+			return line;
 		}
+		return null;
 	}
 
+	public static void sendLinkChatToPlayer(final @Nonnull ICommandSender player, final @Nonnull String[] astring) {
+		final IChatComponent chat = getLinkChat(astring);
+		if (chat!=null)
+			ChatUtil.sendPlayerChat(player, chat);
+	}
+
+	public static void sendLinkChatToServer(final @Nonnull String[] astring) {
+		final IChatComponent chat = getLinkChat(astring);
+		if (chat!=null)
+			ChatUtil.sendServerChat(chat);
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<String> addTabCompletionOptions(final ICommandSender icommandsender, final String[] astring) {
 		if (astring.length<=1)
