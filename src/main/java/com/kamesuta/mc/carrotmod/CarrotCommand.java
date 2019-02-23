@@ -1,24 +1,26 @@
 package com.kamesuta.mc.carrotmod;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
+import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.event.HoverEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextFormatting;
 
 public class CarrotCommand extends CommandBase {
 	private final CarrotBubu bubu;
@@ -30,175 +32,153 @@ public class CarrotCommand extends CommandBase {
 	}
 
 	@Override
-	public List<String> getCommandAliases()
-	{
+	public List<String> getCommandAliases() {
 		return Arrays.asList("h");
 	}
 
 	@Override
-	public String getCommandName()
-	{
+	public String getCommandName() {
 		return "carrot";
 	}
 
 	@Override
-	public int getRequiredPermissionLevel()
-	{
+	public int getRequiredPermissionLevel() {
 		return 0;
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(final ICommandSender p_71519_1_) {
+	public boolean checkPermission(final MinecraftServer server, final ICommandSender sender) {
 		return true;
 	}
 
 	@Override
 	public String getCommandUsage(final ICommandSender icommandsender) {
-		return "carrot <command>";
+		return "h <command>";
 	}
 
 	@Override
-	public void processCommand(final ICommandSender icommandsender, final String[] astring) {
-		if (astring.length >= 1 && (StringUtils.equalsIgnoreCase(astring[0], "bubu") || StringUtils.equalsIgnoreCase(astring[0], "!bubu")))
-		{
-			final boolean bubu = StringUtils.equalsIgnoreCase(astring[0], "bubu");
-			final int count = NumberUtils.toInt(astring[astring.length-1], -1);
-			if (astring.length >= 2 && !(NumberUtils.toInt(astring[1], -1) >= 0)) {
-				final boolean hasPermission = (!(icommandsender instanceof EntityPlayer)) || MinecraftServer.getServer().getConfigurationManager().func_152596_g(((EntityPlayer)icommandsender).getGameProfile());
-				if(hasPermission) {
-					final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
-					if (entityplayermp == null)
-					{
+	public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
+		if (args.length>=1&&(StringUtils.equalsIgnoreCase(args[0], "bubu")||StringUtils.equalsIgnoreCase(args[0], "!bubu"))) {
+			final boolean bubu = StringUtils.equalsIgnoreCase(args[0], "bubu");
+			final int count = NumberUtils.toInt(args[args.length-1], -1);
+			if (args.length>=2&&!(NumberUtils.toInt(args[1], -1)>=0)) {
+				final boolean hasPermission = !(sender instanceof EntityPlayer)||sender.canCommandSenderUseCommand(2, "");
+				if (hasPermission) {
+					final EntityPlayerMP entityplayermp = getPlayer(server, sender, args[1]);
+					if (entityplayermp==null)
 						throw new PlayerNotFoundException();
+					else {
+						ChatBuilder.sendServer(ChatBuilder.create(sender.getName()+" had "+entityplayermp.getName()+" BUBUed!")
+								.setStyle(new Style().setColor(TextFormatting.GOLD).setItalic(true)));
+						if (bubu)
+							this.bubu.addPlayer(getCommandSenderAsPlayer(entityplayermp), count);
+						else
+							this.bubu.removePlayer(getCommandSenderAsPlayer(entityplayermp));
 					}
-					else
-					{
-						final IChatComponent chatcomponent = ChatUtil.byText(icommandsender.getCommandSenderName() + " had " + entityplayermp.getCommandSenderName() + " BUBUed!");
-						chatcomponent.getChatStyle().setColor(EnumChatFormatting.GOLD).setItalic(true);
-						ChatUtil.sendServerChat(chatcomponent);
-						if (bubu) this.bubu.addPlayer(getCommandSenderAsPlayer(entityplayermp), count); else this.bubu.removePlayer(getCommandSenderAsPlayer(entityplayermp));
-					}
-				} else {
-					ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("You don't have permission to use [bubu.other]").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-				}
-			} else {
-				if (bubu) {
-					this.bubu.addPlayer(getCommandSenderAsPlayer(icommandsender), count);
-				} else {
-					this.bubu.removePlayer(getCommandSenderAsPlayer(icommandsender));
-					func_152373_a(icommandsender, this, "canceled BUBU!.", new Object[0]);
-				}
+				} else
+					ChatBuilder.create("You don't have permission to use [bubu.other]").setStyle(new Style().setColor(TextFormatting.RED)).sendPlayer(sender);
+			} else if (bubu)
+				this.bubu.addPlayer(getCommandSenderAsPlayer(sender), count);
+			else {
+				this.bubu.removePlayer(getCommandSenderAsPlayer(sender));
+				notifyCommandListener(sender, this, "canceled BUBU!.", new Object[0]);
 			}
-		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "me")) {
-			final ItemStack item = getItem(icommandsender);
-			final IChatComponent c0 = getNameWithItem(icommandsender, item);
-			final String chat = func_82360_a(icommandsender, astring, 1);
-			if (item != null || StringUtils.isNotBlank(chat)) {
+		} else if (args.length>=1&&StringUtils.equalsIgnoreCase(args[0], "me")) {
+			final ItemStack item = getItem(sender);
+			final ITextComponent c0 = getNameWithItem(sender, item);
+			final String chat = getChatComponentFromNthArg(sender, args, 1, !(sender instanceof EntityPlayer)).getUnformattedText();
+			if (item!=null) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
-				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.emote", c0, chatcolor));
+				ChatBuilder.sendServer(ChatBuilder.create("chat.type.emote").useTranslation().setParams(c0, chatcolor));
 			}
-		} else if (astring.length >= 1 && StringUtils.equalsIgnoreCase(astring[0], "t")) {
-			final ItemStack item = getItem(icommandsender);
-			final IChatComponent c0 = getNameWithItem(icommandsender, item);
-			final String chat = func_82360_a(icommandsender, astring, 1);
-			if (item != null || StringUtils.isNotBlank(chat)) {
+		} else if (args.length>=1&&StringUtils.equalsIgnoreCase(args[0], "t")) {
+			final ItemStack item = getItem(sender);
+			final ITextComponent c0 = getNameWithItem(sender, item);
+			final String chat = getChatComponentFromNthArg(sender, args, 1, !(sender instanceof EntityPlayer)).getUnformattedText();
+			if (item!=null) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
-				ChatUtil.sendServerChat(ChatUtil.byTranslation("chat.type.text", c0, chatcolor));
-				sendLinkChat(icommandsender, astring);
+				ChatBuilder.sendServer(ChatBuilder.create("chat.type.text").useTranslation().setParams(c0, chatcolor));
+				//				sendLinkChat(sender, args);
 			}
-
-		} else if (astring.length >= 2 && (StringUtils.equalsIgnoreCase(astring[0], "tell") || StringUtils.equalsIgnoreCase(astring[0], "w") || StringUtils.equalsIgnoreCase(astring[0], "msg"))) {
-			final EntityPlayerMP entityplayermp = getPlayer(icommandsender, astring[1]);
-			if (entityplayermp == null)
-			{
+		} else if (args.length>=2&&(StringUtils.equalsIgnoreCase(args[0], "tell")||StringUtils.equalsIgnoreCase(args[0], "w")||StringUtils.equalsIgnoreCase(args[0], "msg"))) {
+			final EntityPlayerMP entityplayermp = getPlayer(server, sender, args[1]);
+			if (entityplayermp==null)
 				throw new PlayerNotFoundException();
-			}
-			else
-			{
-				final ItemStack item = getItem(icommandsender);
-				final String chat = func_82360_a(icommandsender, astring, 2);
+			else {
+				final ItemStack item = getItem(sender);
+				final String chat = getChatComponentFromNthArg(sender, args, 2, !(sender instanceof EntityPlayer)).getUnformattedText();
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
-				final IChatComponent c0 = getNameWithItem(icommandsender, item);
-				if (item != null || StringUtils.isNotBlank(chat)) {
-					final IChatComponent chatcomponenttranslation = ChatUtil.byTranslation("commands.message.display.incoming", c0, chatcolor);
-					final IChatComponent chatcomponenttranslation1 = ChatUtil.byTranslation("commands.message.display.outgoing", entityplayermp.func_145748_c_(), chatcolor);
-					ChatUtil.sendPlayerChat(entityplayermp, chatcomponenttranslation.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
-					ChatUtil.sendPlayerChat(icommandsender, chatcomponenttranslation1.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true)));
-					sendLinkChat(icommandsender, astring);
+				final ITextComponent c0 = getNameWithItem(sender, item);
+				if (item!=null||StringUtils.isNotBlank(chat)) {
+					ChatBuilder.sendPlayer(entityplayermp, ChatBuilder.create("commands.message.display.incoming").useTranslation().setParams(c0, chatcolor).setStyle(new Style().setColor(TextFormatting.GRAY).setItalic(true)));
+					ChatBuilder.sendPlayer(sender, ChatBuilder.create("commands.message.display.outgoing").useTranslation().setParams(entityplayermp.getDisplayName(), chatcolor).setStyle(new Style().setColor(TextFormatting.GRAY).setItalic(true)));
+					//					sendLinkChat(sender, args);
 				}
 			}
-		} else if (StringUtils.equalsIgnoreCase(astring[0], "allplayer") && icommandsender.equals(MinecraftServer.getServer())) {
-			final MinecraftServer s = MinecraftServer.getServer();
-			Reference.logger.info("CurrentPlayerCount: {}", s.getCurrentPlayerCount());
-			final String[] userNames = s.getAllUsernames();
-			if (userNames.length > 0)
-				Reference.logger.info(StringUtils.join(userNames, " "));
-		} else {
-			ChatUtil.sendPlayerChat(icommandsender, ChatUtil.byText("/carrot <bubu|me|t|tell>"));
-		}
+			//		} else if (StringUtils.equalsIgnoreCase(args[0], "allplayer")&&sender.equals(MinecraftServer.getServer())) {
+			//			final MinecraftServer s = MinecraftServer.getServer();
+			//			Reference.logger.info("CurrentPlayerCount: {}", s.getCurrentPlayerCount());
+			//			final String[] userNames = s.getAllUsernames();
+			//			if (userNames.length>0)
+			//				Reference.logger.info(StringUtils.join(userNames, " "));
+		} else
+			throw new WrongUsageException("/h <bubu|me|t|tell>", new Object[0]);
 	}
 
 	public static ItemStack getItem(final ICommandSender icommandsender) {
 		ItemStack item = null;
 		if (icommandsender instanceof EntityPlayer) {
-			final EntityPlayer player = (EntityPlayer)icommandsender;
-			item = player.getHeldItem();
+			final EntityPlayer player = (EntityPlayer) icommandsender;
+			item = player.getHeldItemMainhand();
 		}
 		return item;
 	}
 
-	public static IChatComponent getNameWithItem(final ICommandSender icommandsender, final ItemStack item) {
-		final IChatComponent c0 = icommandsender.func_145748_c_();
-		if (item != null)
-			c0.appendSibling(item.func_151000_E());
+	public static ITextComponent getNameWithItem(final ICommandSender icommandsender, final ItemStack item) {
+		final ITextComponent c0 = icommandsender.getDisplayName();
+		if (item!=null)
+			c0.appendSibling(item.getTextComponent());
 		return c0;
 	}
 
-	public static void sendLinkChat(final ICommandSender icommandsender, final String[] astring) {
-		final List<String> links = new ArrayList<String>();
-		final String[] linkstr = {"http://", "https://"};
-		for (final String str : astring) {
-			for (final String str1 : linkstr) {
-				final int index = str.indexOf(str1);
-				if (index != -1)
-					links.add(str.substring(index).trim());
+	/*	public static void sendLinkChat(final ICommandSender icommandsender, final String[] astring) {
+			final List<String> links = new ArrayList<String>();
+			final String[] linkstr = { "http://", "https://" };
+			for (final String str : astring)
+				for (final String str1 : linkstr) {
+					final int index = str.indexOf(str1);
+					if (index!=-1)
+						links.add(str.substring(index).trim());
+				}
+			if (!links.isEmpty()) {
+				final IChatComponent line = ChatUtil.byText("");
+				final boolean oneLink = links.size()==1;
+				for (int i = 0; i<links.size(); i++) {
+					final String link = links.get(i);
+					final ChatStyle chatStyle = new ChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)))
+							.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link))
+							.setColor(EnumChatFormatting.GOLD);
+					line.appendSibling(ChatUtil.byText(oneLink ? "[ Link ]" : "[ Link #"+(i+1)+" ]").setChatStyle(chatStyle));
+					if (!oneLink)
+						line.appendSibling(ChatUtil.byText(" "));
+				}
+				ChatUtil.sendPlayerChat(icommandsender, line);
 			}
 		}
-		if (!links.isEmpty()) {
-			final IChatComponent line = ChatUtil.byText("");
-			final boolean oneLink = links.size() == 1;
-			for(int i = 0; i < links.size(); i++) {
-				final String link = links.get(i);
-				final ChatStyle chatStyle = new ChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatUtil.byText(link)))
-						.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link))
-						.setColor(EnumChatFormatting.GOLD);
-				line.appendSibling(ChatUtil.byText(oneLink ? "[ Link ]" : ("[ Link #" + (i + 1) + " ]")).setChatStyle(chatStyle));
-				if(!oneLink)
-					line.appendSibling(ChatUtil.byText(" "));
-			}
-			ChatUtil.sendPlayerChat(icommandsender, line);
-		}
-	}
-
+	*/
 	@Override
-	public List<String> addTabCompletionOptions(final ICommandSender icommandsender, final String[] astring) {
-		if (astring.length <= 1) {
-			return getListOfStringsMatchingLastWord(astring, "bubu", "t", "me", "tell", "msg");
-		} else if (astring.length <= 2) {
-			return getListOfStringsMatchingLastWord(astring, MinecraftServer.getServer().getAllUsernames());
-		} else {
+	public List<String> getTabCompletionOptions(final MinecraftServer server, final ICommandSender sender, final String[] args, @Nullable final BlockPos pos) {
+		if (args.length<=1)
+			return getListOfStringsMatchingLastWord(args, "bubu", "t", "me", "tell", "msg");
+		else if (args.length<=2)
+			return getListOfStringsMatchingLastWord(args, server.getAllUsernames());
+		else
 			return null;
-		}
 	}
 
 	@Override
 	public boolean isUsernameIndex(final String[] astring, final int i) {
-		return i == 2;
-	}
-
-	@Override
-	public int compareTo(final Object o) {
-		return 0;
+		return i==2;
 	}
 
 }
