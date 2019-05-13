@@ -52,13 +52,11 @@ public class ChatBuilder {
 			if (this.params.length>0)
 				s = String.format(s, this.params);
 
-			if (this.useJson)
-				try {
-					chat = ITextComponent.Serializer.jsonToComponent(s);
-				} catch (final Exception e) {
+			if (this.useJson) {
+				chat = ITextComponent.Serializer.jsonToComponent(s);
+				if (chat==null)
 					chat = new TextComponentString("Invaild Json: "+this.text);
-				}
-			else
+			} else
 				chat = new TextComponentString(this.text);
 		}
 		if (this.style!=null)
@@ -145,22 +143,22 @@ public class ChatBuilder {
 	@SideOnly(Side.CLIENT)
 	public static void chatClient(final @Nonnull ChatBuilder chat) {
 		final Minecraft mc = Minecraft.getMinecraft();
-		if (mc.thePlayer!=null) {
+		if (mc.player!=null) {
 			final ITextComponent msg = chat.build();
 			if (chat.useId)
 				mc.ingameGUI.getChatGUI().printChatMessageWithOptionalDeletion(msg, chat.id);
 			else
-				mc.thePlayer.addChatComponentMessage(msg);
+				mc.player.sendMessage(msg);
 		}
 	}
 
 	public static void sendPlayer(final @Nonnull ICommandSender target, final @Nonnull ChatBuilder chat) {
-		target.addChatMessage(chat.build());
+		target.sendMessage(chat.build());
 	}
 
 	//	@SideOnly(Side.SERVER)
 	public static void sendServer(final @Nonnull ChatBuilder chat) {
 		final PlayerList player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList();
-		player.sendChatMsg(chat.build());
+		player.sendMessage(chat.build());
 	}
 }

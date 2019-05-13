@@ -11,7 +11,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -32,12 +31,12 @@ public class CarrotCommand extends CommandBase {
 	}
 
 	@Override
-	public List<String> getCommandAliases() {
+	public List<String> getAliases() {
 		return Arrays.asList("h");
 	}
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "carrot";
 	}
 
@@ -52,7 +51,7 @@ public class CarrotCommand extends CommandBase {
 	}
 
 	@Override
-	public String getCommandUsage(final ICommandSender icommandsender) {
+	public String getUsage(final ICommandSender icommandsender) {
 		return "h <command>";
 	}
 
@@ -62,19 +61,15 @@ public class CarrotCommand extends CommandBase {
 			final boolean bubu = StringUtils.equalsIgnoreCase(args[0], "bubu");
 			final int count = NumberUtils.toInt(args[args.length-1], -1);
 			if (args.length>=2&&!(NumberUtils.toInt(args[1], -1)>=0)) {
-				final boolean hasPermission = !(sender instanceof EntityPlayer)||sender.canCommandSenderUseCommand(2, "");
+				final boolean hasPermission = !(sender instanceof EntityPlayer)||sender.canUseCommand(2, "");
 				if (hasPermission) {
 					final EntityPlayerMP entityplayermp = getPlayer(server, sender, args[1]);
-					if (entityplayermp==null)
-						throw new PlayerNotFoundException();
-					else {
-						ChatBuilder.sendServer(ChatBuilder.create(sender.getName()+" had "+entityplayermp.getName()+" BUBUed!")
-								.setStyle(new Style().setColor(TextFormatting.GOLD).setItalic(true)));
-						if (bubu)
-							this.bubu.addPlayer(getCommandSenderAsPlayer(entityplayermp), count);
-						else
-							this.bubu.removePlayer(getCommandSenderAsPlayer(entityplayermp));
-					}
+					ChatBuilder.sendServer(ChatBuilder.create(sender.getName()+" had "+entityplayermp.getName()+" BUBUed!")
+							.setStyle(new Style().setColor(TextFormatting.GOLD).setItalic(true)));
+					if (bubu)
+						this.bubu.addPlayer(getCommandSenderAsPlayer(entityplayermp), count);
+					else
+						this.bubu.removePlayer(getCommandSenderAsPlayer(entityplayermp));
 				} else
 					ChatBuilder.create("You don't have permission to use [bubu.other]").setStyle(new Style().setColor(TextFormatting.RED)).sendPlayer(sender);
 			} else if (bubu)
@@ -102,18 +97,15 @@ public class CarrotCommand extends CommandBase {
 			}
 		} else if (args.length>=2&&(StringUtils.equalsIgnoreCase(args[0], "tell")||StringUtils.equalsIgnoreCase(args[0], "w")||StringUtils.equalsIgnoreCase(args[0], "msg"))) {
 			final EntityPlayerMP entityplayermp = getPlayer(server, sender, args[1]);
-			if (entityplayermp==null)
-				throw new PlayerNotFoundException();
-			else {
-				final ItemStack item = getItem(sender);
-				final String chat = getChatComponentFromNthArg(sender, args, 2, !(sender instanceof EntityPlayer)).getUnformattedText();
-				final String chatcolor = chat.replaceAll("&", "\u00A7");
-				final ITextComponent c0 = getNameWithItem(sender, item);
-				if (item!=null||StringUtils.isNotBlank(chat)) {
-					ChatBuilder.sendPlayer(entityplayermp, ChatBuilder.create("commands.message.display.incoming").useTranslation().setParams(c0, chatcolor).setStyle(new Style().setColor(TextFormatting.GRAY).setItalic(true)));
-					ChatBuilder.sendPlayer(sender, ChatBuilder.create("commands.message.display.outgoing").useTranslation().setParams(entityplayermp.getDisplayName(), chatcolor).setStyle(new Style().setColor(TextFormatting.GRAY).setItalic(true)));
-					//					sendLinkChat(sender, args);
-				}
+			final ItemStack item = getItem(sender);
+			final String chat = getChatComponentFromNthArg(sender, args, 2, !(sender instanceof EntityPlayer)).getUnformattedText();
+			final String chatcolor = chat.replaceAll("&", "\u00A7");
+			final ITextComponent c0 = getNameWithItem(sender, item);
+			if (item!=null||StringUtils.isNotBlank(chat)) {
+				ChatBuilder.sendPlayer(entityplayermp, ChatBuilder.create("commands.message.display.incoming").useTranslation().setParams(c0, chatcolor).setStyle(new Style().setColor(TextFormatting.GRAY).setItalic(true)));
+				ChatBuilder.sendPlayer(sender, ChatBuilder.create("commands.message.display.outgoing").useTranslation().setParams(entityplayermp.getDisplayName(), chatcolor).setStyle(new Style().setColor(TextFormatting.GRAY).setItalic(true)));
+				//					sendLinkChat(sender, args);
+
 			}
 			//		} else if (StringUtils.equalsIgnoreCase(args[0], "allplayer")&&sender.equals(MinecraftServer.getServer())) {
 			//			final MinecraftServer s = MinecraftServer.getServer();
@@ -167,11 +159,11 @@ public class CarrotCommand extends CommandBase {
 		}
 	*/
 	@Override
-	public List<String> getTabCompletionOptions(final MinecraftServer server, final ICommandSender sender, final String[] args, @Nullable final BlockPos pos) {
+	public List<String> getTabCompletions(final MinecraftServer server, final ICommandSender sender, final String[] args, @Nullable final BlockPos pos) {
 		if (args.length<=1)
 			return getListOfStringsMatchingLastWord(args, "bubu", "t", "me", "tell", "msg");
 		else if (args.length<=2)
-			return getListOfStringsMatchingLastWord(args, server.getAllUsernames());
+			return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
 		else
 			return null;
 	}

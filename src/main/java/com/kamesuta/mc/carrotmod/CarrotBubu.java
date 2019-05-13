@@ -25,7 +25,7 @@ public class CarrotBubu {
 
 			if (bubu.shouldBubu()) {
 				ChatBuilder.sendPlayer(bubu.player, bubu.message);
-				bubu.player.worldObj.createExplosion(
+				bubu.player.world.createExplosion(
 						bubu.player,
 						bubu.player.getPosition().getX(),
 						bubu.player.getPosition().getY(),
