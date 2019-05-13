@@ -82,7 +82,7 @@ public class CarrotCommand extends CommandBase {
 			final ItemStack item = getItem(sender);
 			final ITextComponent c0 = getNameWithItem(sender, item);
 			final String chat = getChatComponentFromNthArg(sender, args, 1, !(sender instanceof EntityPlayer)).getUnformattedText();
-			if (item!=null) {
+			if (item!=null||StringUtils.isNotBlank(chat)) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				ChatBuilder.sendServer(ChatBuilder.create("chat.type.emote").useTranslation().setParams(c0, chatcolor));
 			}
@@ -90,7 +90,7 @@ public class CarrotCommand extends CommandBase {
 			final ItemStack item = getItem(sender);
 			final ITextComponent c0 = getNameWithItem(sender, item);
 			final String chat = getChatComponentFromNthArg(sender, args, 1, !(sender instanceof EntityPlayer)).getUnformattedText();
-			if (item!=null) {
+			if (item!=null||StringUtils.isNotBlank(chat)) {
 				final String chatcolor = chat.replaceAll("&", "\u00A7");
 				ChatBuilder.sendServer(ChatBuilder.create("chat.type.text").useTranslation().setParams(c0, chatcolor));
 				//				sendLinkChat(sender, args);
@@ -122,6 +122,9 @@ public class CarrotCommand extends CommandBase {
 		if (icommandsender instanceof EntityPlayer) {
 			final EntityPlayer player = (EntityPlayer) icommandsender;
 			item = player.getHeldItemMainhand();
+
+			if (item==ItemStack.EMPTY)
+				item = null;
 		}
 		return item;
 	}
