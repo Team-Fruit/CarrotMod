@@ -25,6 +25,11 @@ public class CarrotBubu {
 			final BubingPlayer bubu = it.next();
 
 			if (bubu.shouldBubu()) {
+				if (bubu.player.isSpectator()) {
+					bubu.player.attackEntityFrom(bubu.source, Float.MAX_VALUE);
+					it.remove();
+				}
+
 				ChatBuilder.sendPlayer(bubu.player, bubu.message);
 				bubu.player.world.createExplosion(
 						bubu.player,
