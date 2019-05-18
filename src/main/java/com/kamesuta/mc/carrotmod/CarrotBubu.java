@@ -13,6 +13,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
 public class CarrotBubu {
@@ -41,6 +42,11 @@ public class CarrotBubu {
 
 			bubu.next();
 		}
+	}
+
+	@SubscribeEvent
+	public void onLoggedOut(final PlayerLoggedOutEvent event) {
+		removePlayer(event.player);
 	}
 
 	public void addPlayer(final EntityPlayer player, final int count) {
