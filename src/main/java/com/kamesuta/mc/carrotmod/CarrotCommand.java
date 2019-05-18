@@ -75,6 +75,9 @@ public class CarrotCommand extends CommandBase {
 			} else if (bubu)
 				this.bubu.addPlayer(getCommandSenderAsPlayer(sender), count);
 			else {
+				if (args.length>=2&&StringUtils.equalsIgnoreCase(args[1], "@a"))
+					this.bubu.clear();
+
 				this.bubu.removePlayer(getCommandSenderAsPlayer(sender));
 				notifyCommandListener(sender, this, "canceled BUBU!.", new Object[0]);
 			}

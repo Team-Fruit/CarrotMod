@@ -70,6 +70,10 @@ public class CarrotBubu {
 		}
 	}
 
+	public void clear() {
+		this.bubuingplayers.clear();
+	}
+
 	private class BubingPlayer {
 		public static final int DefaultBubuCount = 50;
 		public int remaining;
