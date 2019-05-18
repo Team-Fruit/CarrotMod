@@ -8,7 +8,10 @@
 !/src/
 !/gradle
 !/gradle/
+!/lib
+!/lib/
 !/build.gradle
+!/gradle.properties
 !/gradlew
 !/gradlew.bat
 !/install.bat
